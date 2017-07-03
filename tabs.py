@@ -16,23 +16,93 @@ import curses
 # E|-----------------------------|
 
 def main():
-    smooth = Tab((Note((12,14),4,command="h"),
-                 Note((12,),3),
-                 Note((14,),4),
-                 Note((12,14),3,command="h"),
+    smooth = Tab(Note("12h14",3),
+                 Note("12",4),
+                 Note("14",3),
+                 Note("12h14",4),
                  Chord((None,None,None,2,3,2))),
                  "Smooth")
 
     print(smooth)
 
+class TabReader:
+    """Takes a text file formatted like a guitar tab
+    and parses it to create a Tab object."""
+
+    def __init__(self):
+        pass
+
+    def parse_tab(self, tab_file):
+        """Takes a file name to extract the text for a guitar
+        tab from and returns a Tab object."""
+
+        # Read from a tab file, turning it into one
+        # continuous tab with no line breaks
+        with open(tab_file) as tab:
+            title = tab.readline()[1:-2]
+            strings = [tab.readline() for x in range(6)]
+            while strings[0][-1] != "|":
+                for s in strings:
+                    s += tab.readline()[:-1] # strip off that newline
+
+        # tuning is first letter of each line of tab
+        tuning = [s[0] for s in strings]
+
+        loc = 2
+        current = [s[loc] for s in strings]
+        noteBeingBuilt = ""
+        # move through the tab one column at a time until
+        # we hit another pipe, which signals the end of the tab
+        song = []
+        while "|" not in current:
+            # if that column is "blank"
+            if set(current) == set("-"):
+                if noteBeingBuilt == "":
+                    loc += 1
+                    continue
+                else:
+                    song.append(Note(NoteBeingBuilt,noteString))
+                    noteBeingBuilt = ""
+
+            # if there are exactly five blank spaces in the column
+            # then we know it's a Note
+            elif current.count("-") == 5:
+                noteString = 1
+                for s in current:
+                    if s != "-":
+                        noteBeingBuilt += s
+                        break
+                    noteString += 1
+            # two or more strings with notes on them mean a chord
+            elif current.count("-") <= 4:
+                chordBeingBuilt = []
+                jump = False
+                # check the next column if it's a two-digit chord
+                peek = [s[loc + 1] for s in strings]
+                # add each fret number of the chord
+                for s, p in zip(current, peek)
+                    if s != "-" and p != "-":
+                        chordBeingBuilt.append(s+p)
+                        jump = True
+                    elif s != "-":
+                        chordBeingBuilt.append(s)
+                    else
+                        chordBeingBuilt.append(None)
+                if jump:
+                    loc += 1
+
+                song.append(Chord(chordBeingBuilt))
+
+        return Tab(song, title, tuning=tuning)
 
 class Tab:
     """Stores a guitar tab as a series of Note and Chord objects."""
+
     def __init__(self,
                 tune,
                 name,
                 tuning=("E","A","D","G","B","e"),
-                line_length = 60):
+                line_length = 60)
         self.tuning = tuning
         self.lineLength = line_length
         self.tune = tune
@@ -58,7 +128,7 @@ class Tab:
                 # strings = map(lambda s: s.append("\n"), strings)
                 location = 0
             if type(sound) == Note:
-                offset = len(sound.note)
+                offset = len(sound  .note)
                 c = 1
                 for string in strings:
                     if c == sound.string:
@@ -84,22 +154,12 @@ class Tab:
 class Note:
     """Represents a single note as a fret and string number, with
     optional special command.
-    Fret: tuple containing ints
-    String: int from 1 to 6
-    command: see command listing"""
-    def __init__(self, fret, string, command=None):
+    Note: Fret numbers or fret numbers + command, as string
+    String: int from 1 to 6"""
+    def __init__(self, note, string, command=None):
         self.fret = fret
         self.string = string
-        self.note = str(fret[0])
-        if command is not None:
-            self.command = command
-            self._process_command()
-
-    def _process_command(self):
-        if self.command in ["~","b"]:
-            self.note = str(self.fret) + self.command
-        elif self.command in ["/","\\","h","p"]:
-            self.note = "".join([str(self.fret[0]),self.command,str(self.fret[1])])
+        self.note = note
 
 class Chord:
     """Represents a chord as a set of fret numbers.
