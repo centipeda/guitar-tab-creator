@@ -16,13 +16,7 @@ import curses
 # E|-----------------------------|
 
 def main():
-    smooth = Tab(Note("12h14",3),
-                 Note("12",4),
-                 Note("14",3),
-                 Note("12h14",4),
-                 Chord((None,None,None,2,3,2))),
-                 "Smooth")
-
+    smooth = TabReader().parse_tab("test_tab.txt")
     print(smooth)
 
 class TabReader:
@@ -42,6 +36,7 @@ class TabReader:
             title = tab.readline()[1:-2]
             strings = [tab.readline() for x in range(6)]
             while strings[0][-1] != "|":
+                print(strings[0][-2])
                 for s in strings:
                     s += tab.readline()[:-1] # strip off that newline
 
@@ -80,13 +75,13 @@ class TabReader:
                 # check the next column if it's a two-digit chord
                 peek = [s[loc + 1] for s in strings]
                 # add each fret number of the chord
-                for s, p in zip(current, peek)
+                for s, p in zip(current, peek):
                     if s != "-" and p != "-":
                         chordBeingBuilt.append(s+p)
                         jump = True
                     elif s != "-":
                         chordBeingBuilt.append(s)
-                    else
+                    else:
                         chordBeingBuilt.append(None)
                 if jump:
                     loc += 1
@@ -98,13 +93,11 @@ class TabReader:
 class Tab:
     """Stores a guitar tab as a series of Note and Chord objects."""
 
-    def __init__(self,
-                tune,
-                name,
+    def __init__(self, tune, name,
                 tuning=("E","A","D","G","B","e"),
-                line_length = 60)
+                line_length=60):
         self.tuning = tuning
-        self.lineLength = line_length
+        self.lineLength = 60 # line_length
         self.tune = tune
         self.name = name
 
