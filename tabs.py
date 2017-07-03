@@ -1,4 +1,4 @@
-# Lets you create, edit, store, and view tablature for guitar.
+    # Lets you create, edit, store, and view tablature for guitar.
 
 import curses
 
@@ -19,7 +19,8 @@ def main():
     smooth = Tab((Note((12,14),4,command="h"),
                  Note((12,),3),
                  Note((14,),4),
-                 Note((12,14),3,command="h")),
+                 Note((12,14),3,command="h"),
+                 Chord((None,None,None,2,3,2))),
                  "Smooth")
 
     print(smooth)
@@ -45,15 +46,14 @@ class Tab:
         location = 2
         offset = 0
         strings = [
-        [self.tuning[0],"|"],
-        [self.tuning[1],"|"],
-        [self.tuning[2],"|"],
-        [self.tuning[3],"|"],
-        [self.tuning[4],"|"],
-        [self.tuning[5],"|"]
+        [self.tuning[0],"|", "-"],
+        [self.tuning[1],"|", "-"],
+        [self.tuning[2],"|", "-"],
+        [self.tuning[3],"|", "-"],
+        [self.tuning[4],"|", "-"],
+        [self.tuning[5],"|", "-"]
         ]
         for sound in self.tune:
-            print(self.tune)
             if location >= self.lineLength:
                 # strings = map(lambda s: s.append("\n"), strings)
                 location = 0
@@ -61,8 +61,6 @@ class Tab:
                 offset = len(sound.note)
                 c = 1
                 for string in strings:
-                    print(strings)
-                    print(string)
                     if c == sound.string:
                         string.append(sound.note)
                     else:
@@ -76,11 +74,12 @@ class Tab:
                         string.append(sound.blankCharacter)
                     else:
                         string.append(sound.chord[c - 1])
-                        c += 1
+                    c += 1
             location += offset + 1
-            strings = map(lambda s: s.append("-"),strings)
-        strings = map(lambda s: s.append("|"),strings)
-        return "\n".join(["".join(s) for s in strings])
+            for s in strings: s.append("-")
+        for s in strings: s.append("|")
+        title = "[{}]\n".format(self.name)
+        return title + "\n".join(["".join(s) for s in strings][::-1])
 
 class Note:
     """Represents a single note as a fret and string number, with
@@ -109,7 +108,8 @@ class Chord:
     ex: c chord: (None, 3, 2, 0, 1, 0)"""
     def __init__(self, chord, blank_char="-"):
         self.chord = chord
-        self.blankCharacter = blank_charself
+        self.blankCharacter = blank_char
+        self.chord = self.get_notes()
 
     def get_notes(self):
         notes = []
@@ -119,3 +119,6 @@ class Chord:
             else:
                 notes.append(str(note))
         return notes
+
+if __name__ == "__main__":
+    main()
