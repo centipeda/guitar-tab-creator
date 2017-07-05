@@ -1,4 +1,4 @@
-    # Lets you create, edit, store, and view tablature for guitar.
+# Storage, viewing, and editing for guitar tablature.
 
 import curses
 
