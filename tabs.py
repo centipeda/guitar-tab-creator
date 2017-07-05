@@ -32,16 +32,17 @@ class TabReader:
 
         # Read from a tab file, turning it into one
         # continuous tab with no line breaks
+        print("reading from",tab_file)
         with open(tab_file) as tab:
             title = tab.readline()[1:-2]
             strings = [tab.readline() for x in range(6)]
-            while strings[0][-1] != "|":
+            while "|" not in strings[0][2:]:
                 print(strings[0][-2])
                 for s in strings:
                     s += tab.readline()[:-1] # strip off that newline
 
         # tuning is first letter of each line of tab
-        tuning = [s[0] for s in strings]
+        tuning = [s[0] for s in strings][::-1]
 
         loc = 2
         current = [s[loc] for s in strings]
@@ -50,13 +51,16 @@ class TabReader:
         # we hit another pipe, which signals the end of the tab
         song = []
         while "|" not in current:
+            current = [s[loc] for s in strings]
+            # print(current)
+
             # if that column is "blank"
             if set(current) == set("-"):
                 if noteBeingBuilt == "":
                     loc += 1
                     continue
                 else:
-                    song.append(Note(NoteBeingBuilt,noteString))
+                    song.append(Note(noteBeingBuilt,7 - noteString))
                     noteBeingBuilt = ""
 
             # if there are exactly five blank spaces in the column
@@ -86,9 +90,11 @@ class TabReader:
                 if jump:
                     loc += 1
 
-                song.append(Chord(chordBeingBuilt))
+                song.append(Chord(chordBeingBuilt[::-1]))
+            loc += 1
 
-        return Tab(song, title, tuning=tuning)
+        print(song[-1].chord)
+        return Tab(song[:-1:], title, tuning=tuning)
 
 class Tab:
     """Stores a guitar tab as a series of Note and Chord objects."""
@@ -150,9 +156,8 @@ class Note:
     Note: Fret numbers or fret numbers + command, as string
     String: int from 1 to 6"""
     def __init__(self, note, string, command=None):
-        self.fret = fret
-        self.string = string
         self.note = note
+        self.string = string
 
 class Chord:
     """Represents a chord as a set of fret numbers.
