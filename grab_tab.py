@@ -9,7 +9,7 @@ def get_tab(search_string=None):
         search_string = sys.argv[1]
     url = query_google(search_string.split(" "))
     tab = pull_tab(url)
-    return tab
+    print(tab)
 
 def query_google(search_keywords):
     baseQuery = "https://google.com/search?q={}+site:tabs.ultimate-guitar.com"
@@ -26,13 +26,11 @@ def pull_tab(url):
     data = requests.get(url).text
     # print( data)
     result = bs4.BeautifulSoup(data,"html.parser")
+    # print(result)
     print( "Extracting tab...")
-    tab = result.find("pre",class_="js-tab-content")
-    # print type(tab)
-    if tab.string is None:
-        return "".join([s for s in tab.strings])
-    else:
-        return tab.string
+    tab = result.select_one("pre[class*=js-tab-content]")
+    print(tab.text)
+    return tab.text
 
 
 if __name__ == "__main__":
